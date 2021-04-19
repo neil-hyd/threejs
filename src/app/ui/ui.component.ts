@@ -1,4 +1,5 @@
 import {Component, OnInit} from '@angular/core';
+import { EngineService } from '../engine/engine.service';
 
 @Component({
   selector: 'app-ui',
@@ -6,10 +7,20 @@ import {Component, OnInit} from '@angular/core';
 })
 export class UiComponent implements OnInit {
 
-  public constructor() {
+  animationSpeed = .0001;
+
+  public constructor(private engServ: EngineService) {
   }
 
   public ngOnInit(): void {
+    this.animationSpeed = this.engServ.animationSpeed;
+  }
+
+  public rangeChanged(ev: InputEvent, el: HTMLInputElement)
+  {
+    this.animationSpeed = parseFloat(el.value);
+    this.engServ.animationSpeed = this.animationSpeed;
+    console.log(this.animationSpeed);
   }
 
 }
