@@ -7,6 +7,7 @@ export type GridMode = 'FitGrid' | 'FillViewport';
 
 export interface UIGrid {
 
+  viewport: Size;
   grid: Size;
   gridCellSize: Size;
   gridMode: GridMode;
@@ -16,8 +17,7 @@ export interface UIGrid {
   gridLines: {
     enabled: boolean;
     color: string;
-    style?: string;
-    scale: string;
+    opacity: number;
   };
 }
 

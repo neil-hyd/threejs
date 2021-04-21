@@ -1,6 +1,9 @@
 import { AfterViewInit, Component, ElementRef, HostBinding, Input, OnInit } from '@angular/core';
-import { UIGrid } from '../data/grid.model';
-import { UiGridServiceService } from './service/ui-grid-service.service';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { Size, UIGrid } from '../data/grid.model';
+import { setViewportSize } from './ui-grid.actions';
+import { AppState, gridCellSize, gridSize } from './ui-grid.selector';
 
 @Component({
   selector: 'app-ui-grid',
@@ -9,23 +12,28 @@ import { UiGridServiceService } from './service/ui-grid-service.service';
 })
 export class UiGridComponent implements AfterViewInit {
 
+  count$: Observable<number>;
+
+
+  gridCellSize: Observable<Size>;
+
   constructor(
     private elRef: ElementRef<HTMLElement>,
-    private gridService: UiGridServiceService) { }
+    private store: Store<AppState>) {
 
-  @HostBinding('style.grid-auto-columns.px') get columnWidth() {
-    return this.gridService.gridConfig$.value.gridCellSize.width;
-  }
-
-  @HostBinding('style.grid-auto-rows.px') get rowHeight() {
-    return this.gridService.gridConfig$.value.gridCellSize.height;
+      this.store.select(gridCellSize).subscribe(size => {
+        this.elRef.nativeElement.style.gridAutoColumns = size.width + 'px';
+        this.elRef.nativeElement.style.gridAutoRows = size.height + 'px';
+      });
   }
 
   ngAfterViewInit() {
 
-    this.gridService.gridConfig$.subscribe(config => {
-    });
+    this.gridCellSize = this.store.select(gridSize);
 
-    this.gridService.updateWithViewportSize({ width: this.elRef.nativeElement.clientWidth, height: this.elRef.nativeElement.clientHeight });
+    const { clientWidth, clientHeight } = this.elRef.nativeElement;
+
+    const size: Size = { width: clientWidth, height: clientHeight };
+    this.store.dispatch(setViewportSize({ size }));
   }
 }

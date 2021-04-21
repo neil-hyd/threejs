@@ -2,20 +2,20 @@
   <ng-template pTemplate>
     <p-panel header="Grid Config">
       <div class="p-field p-grid">
-        <p-checkbox [value]="gridEnabled$ | async" (onChange)="showGridChanged($event)" label="Show Grid Lines">
+        <p-checkbox [value]="enabled$ | async" (onChange)="showGridChanged($event)" label="Show Grid Lines">
         </p-checkbox>
       </div>
 
       <div class="p-field">
-        <label class="p-col-fixed">Grid Size</label>
-        <p-inputNumber [ngModel]="gridColumnWidth$ | async" [showButtons]="true" buttonLayout="horizontal" inputId="horizontal" spinnerMode="horizontal" [step]="1" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" (onInput)="inputChanged($event)">
+        <label class="p-col-fixed">Grid Size {{ (size$ | async).width }}</label>
+        <p-inputNumber [ngModel]="(size$ | async).width" [showButtons]="true" buttonLayout="horizontal" inputId="horizontal" spinnerMode="horizontal" [step]="1" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" (onInput)="inputChanged($event)">
           </p-inputNumber>
-        <p-slider [ngModel]="gridColumnWidth$ | async" (onChange)="sliderChanged($event)"></p-slider>
+        <p-slider [ngModel]="(size$ | async).width" (onChange)="sliderChanged($event)"></p-slider>
       </div>
 
       <div class="p-field">
         <label class="p-col-fixed">Grid Color</label>
-        <p-colorPicker [ngModel]="this.gridColor$ | async" (onChange)="colorChanged($event)"></p-colorPicker>
+        <p-colorPicker [ngModel]="color$ | async" (onChange)="colorChanged($event)"></p-colorPicker>
       </div>
     </p-panel>
   </ng-template>

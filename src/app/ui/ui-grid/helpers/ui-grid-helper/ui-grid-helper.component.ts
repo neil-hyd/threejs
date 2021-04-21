@@ -1,8 +1,8 @@
-import { AfterViewInit, Component, ElementRef, HostBinding, Input, OnChanges } from '@angular/core';
-import { map } from 'rxjs/operators';
-import { UIGrid } from 'src/app/ui/data/grid.model';
-import { UiGridServiceService } from '../../service/ui-grid-service.service';
-import { UiGridConfigComponent } from '../ui-grid-config/ui-grid-config.component';
+import { AfterViewInit, Component, ElementRef } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { Size, UIGrid } from 'src/app/ui/data/grid.model';
+import { AppState, gridLineColor, gridSize, gridState } from '../../ui-grid.selector';
 
 interface GridLine {
   key: string;
@@ -22,19 +22,25 @@ export class UiGridHelperComponent implements AfterViewInit {
 
   gridLines: GridLine[] = [];
 
+  state$: Observable<UIGrid>;
+
   constructor(
     private elRef: ElementRef<HTMLElement>,
-    private gridService: UiGridServiceService) { }
+    private store: Store<AppState>) {
+      this.state$ = this.store.select(gridState);
+
+      this.state$.subscribe(newState => {
+        this.calculateGridLines(newState);
+      });
+
+      this.store.select(gridLineColor).subscribe(newColor => {
+        this.elRef.nativeElement.style.setProperty('--grid-line-color', newColor);
+      });
+    }
 
   ngAfterViewInit() {
 
-    this.gridService.gridConfig$.subscribe(newConfig => {
-      this.calculateGridLines(newConfig);
-    });
 
-    this.gridService.gridConfig$.pipe(map(x => x.gridLines.color)).subscribe(newColor => {
-      this.elRef.nativeElement.style.setProperty('--grid-line-color', newColor);
-    });
   }
 
   calculateGridLines(config: UIGrid) {
@@ -52,7 +58,7 @@ export class UiGridHelperComponent implements AfterViewInit {
           x1: leftPos,
           y1: 0,
           x2: leftPos,
-          y2: this.gridService.viewport.height
+          y2: config.viewport.height
         });
         leftPos += config.gridCellSize.width;
       }
@@ -63,7 +69,7 @@ export class UiGridHelperComponent implements AfterViewInit {
           key: `row${p}`,
           x1: 0,
           y1: topPos,
-          x2: this.gridService.viewport.width,
+          x2: config.viewport.width,
           y2: topPos
         });
         topPos += config.gridCellSize.height;

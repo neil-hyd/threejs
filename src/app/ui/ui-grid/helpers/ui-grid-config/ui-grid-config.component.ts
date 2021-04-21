@@ -1,7 +1,11 @@
 import { Component, ElementRef, OnInit } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { UiGridServiceService } from '../../service/ui-grid-service.service';
+import { Size, UIGrid } from 'src/app/ui/data/grid.model';
+import { Store } from '@ngrx/store';
+import { AppState, gridCellSize, gridLineColor, gridLineEnabled, gridLineOpacity, gridSize } from '../../ui-grid.selector';
+import { setGridLineColor, setGridCellSize, toggleGridLines } from '../../ui-grid.actions';
+
 
 @Component({
   selector: 'app-ui-grid-config',
@@ -10,16 +14,19 @@ import { UiGridServiceService } from '../../service/ui-grid-service.service';
 })
 export class UiGridConfigComponent implements OnInit {
 
-  gridEnabled$: Observable<boolean>;
-  gridColumnWidth$: Observable<number>;
-  gridColor$: Observable<string>;
+  enabled$: Observable<boolean>;
+  size$: Observable<Size>;
+  color$: Observable<string>;
+  opacity$: Observable<number>;
 
   constructor(
     private elRef: ElementRef<HTMLElement>,
-    private gridService: UiGridServiceService) {
-      this.gridEnabled$ = this.gridService.gridConfig$.pipe(map(x => x.gridLines.enabled));
-      this.gridColumnWidth$ = this.gridService.gridConfig$.pipe(map(x => x.gridCellSize.width));
-      this.gridColor$ = this.gridService.gridConfig$.pipe(map(x => x.gridLines.color));
+    private store: Store<AppState>) {
+
+      this.enabled$ = this.store.select(gridLineEnabled);
+      this.size$ = this.store.select(gridCellSize);
+      this.color$ = this.store.select(gridLineColor);
+      this.opacity$ = this.store.select(gridLineOpacity);
     }
 
   ngOnInit() {
@@ -28,19 +35,19 @@ export class UiGridConfigComponent implements OnInit {
 
   showGridChanged(ev: { checked: boolean }) {
 
-    this.gridService.toggleGrid(ev.checked);
+    this.store.dispatch(toggleGridLines({ visible: ev.checked }));
   }
 
   sliderChanged(ev: {value: number, event: any}) {
-    this.gridService.setGridColumnWidth(ev.value);
+    this.store.dispatch(setGridCellSize({ size: {width: ev.value, height: ev.value} }));
   }
 
   inputChanged(ev: {value: number, originalEvent: any}) {
-    this.gridService.setGridColumnWidth(ev.value);
+    this.store.dispatch(setGridCellSize({ size: {width: ev.value, height: ev.value} }));
   }
 
   colorChanged(ev: {value: string, originalEvent: any}) {
-    this.gridService.setGridColor(ev.value);
+    this.store.dispatch(setGridLineColor({ color: ev.value }));
   }
 
   changeGridSize(newSize: number) {

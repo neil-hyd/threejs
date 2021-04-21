@@ -21,6 +21,11 @@ import {SliderModule} from 'primeng/slider';
 import {InputNumberModule} from 'primeng/inputnumber';
 import {ColorPickerModule} from 'primeng/colorpicker';
 
+import { StoreModule } from '@ngrx/store';
+import { uiGridReducer } from './ui/ui-grid/ui-grid.reducer';
+import { EffectsModule } from '@ngrx/effects';
+import { UIGridEffects } from './ui/ui-grid/ui-grid.effects';
+
 declare var cv: any;
 @NgModule({
   declarations: [
@@ -46,7 +51,9 @@ declare var cv: any;
     ButtonModule,
     SliderModule,
     InputNumberModule,
-    ColorPickerModule
+    ColorPickerModule,
+    StoreModule.forRoot({ uiGrid: uiGridReducer }),
+    EffectsModule.forRoot([UIGridEffects])
   ],
   providers: [],
   bootstrap: [
