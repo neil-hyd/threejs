@@ -6,12 +6,19 @@
   grid-auto-rows: 50px;
   position: relative;
 
-  app-ui-grid-helper {
+  > app-ui-grid-helper {
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
     pointer-events: none;
+  }
+  > app-ui-grid-config {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
   }
 }

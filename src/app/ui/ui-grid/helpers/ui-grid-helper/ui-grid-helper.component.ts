@@ -1,4 +1,8 @@
-import { AfterViewInit, Component, ElementRef, Input, OnChanges } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostBinding, Input, OnChanges } from '@angular/core';
+import { map } from 'rxjs/operators';
+import { UIGrid } from 'src/app/ui/data/grid.model';
+import { UiGridServiceService } from '../../service/ui-grid-service.service';
+import { UiGridConfigComponent } from '../ui-grid-config/ui-grid-config.component';
 
 interface GridLine {
   key: string;
@@ -14,51 +18,56 @@ interface GridLine {
   templateUrl: './ui-grid-helper.component.html',
   styleUrls: ['./ui-grid-helper.component.scss']
 })
-export class UiGridHelperComponent implements AfterViewInit, OnChanges {
-
-  @Input() widthPx: number;
-  @Input() heightPx: number;
-  @Input() widthFr: number;
-  @Input() heightFr: number;
-  @Input() frUnit: number;
+export class UiGridHelperComponent implements AfterViewInit {
 
   gridLines: GridLine[] = [];
 
-  constructor() { }
+  constructor(
+    private elRef: ElementRef<HTMLElement>,
+    private gridService: UiGridServiceService) { }
 
   ngAfterViewInit() {
 
+    this.gridService.gridConfig$.subscribe(newConfig => {
+      this.calculateGridLines(newConfig);
+    });
+
+    this.gridService.gridConfig$.pipe(map(x => x.gridLines.color)).subscribe(newColor => {
+      this.elRef.nativeElement.style.setProperty('--grid-line-color', newColor);
+    });
   }
 
-  ngOnChanges() {
-    this.calculateGridLines();
-  }
+  calculateGridLines(config: UIGrid) {
 
-  calculateGridLines() {
+    if (!config) { return; }
 
-    let leftPos = 0;
-    for (let i = 0; i < this.widthFr; i++) {
-      this.gridLines.push({
-        key: `col${i}`,
-        x1: leftPos,
-        y1: 0,
-        x2: leftPos,
-        y2: this.heightPx
-      });
-      leftPos += this.frUnit;
+    this.gridLines.length = 0;
+
+    if (config.gridLines.enabled) {
+
+      let leftPos = 0;
+      for (let i = 0; i < config.grid.width; i++) {
+        this.gridLines.push({
+          key: `col${i}`,
+          x1: leftPos,
+          y1: 0,
+          x2: leftPos,
+          y2: this.gridService.viewport.height
+        });
+        leftPos += config.gridCellSize.width;
+      }
+
+      let topPos = 0;
+      for (let p = 0; p < config.grid.height; p++) {
+        this.gridLines.push({
+          key: `row${p}`,
+          x1: 0,
+          y1: topPos,
+          x2: this.gridService.viewport.width,
+          y2: topPos
+        });
+        topPos += config.gridCellSize.height;
+      }
     }
-
-    let topPos = 0;
-    for (let p = 0; p < this.heightFr; p++) {
-      this.gridLines.push({
-        key: `row${p}`,
-        x1: 0,
-        y1: topPos,
-        x2: this.widthPx,
-        y2: topPos
-      });
-      topPos += this.frUnit;
-    }
   }
-
 }

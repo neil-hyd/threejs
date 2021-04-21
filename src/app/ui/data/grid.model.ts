@@ -1,13 +1,28 @@
+export interface Size {
+  width: number;
+  height: number;
+}
+
+export type GridMode = 'FitGrid' | 'FillViewport';
 
 export interface UIGrid {
-  widthPx: number;
-  heightPx: number;
-  widthFr: number;
-  heightFr: number;
-  frUnit: number;
+
+  grid: Size;
+  gridCellSize: Size;
+  gridMode: GridMode;
+
+  children: UIGridItem[];
+
+  gridLines: {
+    enabled: boolean;
+    color: string;
+    style?: string;
+    scale: string;
+  };
 }
 
 export interface UIGridItem {
+
   key: string;
   x: number;
   y: number;

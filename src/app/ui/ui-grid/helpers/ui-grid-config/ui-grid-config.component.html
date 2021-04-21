@@ -1,0 +1,24 @@
+<p-overlayPanel #op [ngStyle]="{width: '300px'}">
+  <ng-template pTemplate>
+    <p-panel header="Grid Config">
+      <div class="p-field p-grid">
+        <p-checkbox [value]="gridEnabled$ | async" (onChange)="showGridChanged($event)" label="Show Grid Lines">
+        </p-checkbox>
+      </div>
+
+      <div class="p-field">
+        <label class="p-col-fixed">Grid Size</label>
+        <p-inputNumber [ngModel]="gridColumnWidth$ | async" [showButtons]="true" buttonLayout="horizontal" inputId="horizontal" spinnerMode="horizontal" [step]="1" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" (onInput)="inputChanged($event)">
+          </p-inputNumber>
+        <p-slider [ngModel]="gridColumnWidth$ | async" (onChange)="sliderChanged($event)"></p-slider>
+      </div>
+
+      <div class="p-field">
+        <label class="p-col-fixed">Grid Color</label>
+        <p-colorPicker [ngModel]="this.gridColor$ | async" (onChange)="colorChanged($event)"></p-colorPicker>
+      </div>
+    </p-panel>
+  </ng-template>
+</p-overlayPanel>
+
+<p-button icon="pi pi-cog" styleClass="p-button-lg" (click)="op.toggle($event)"></p-button>

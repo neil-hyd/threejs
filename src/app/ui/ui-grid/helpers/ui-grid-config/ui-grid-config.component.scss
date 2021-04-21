@@ -1,0 +1,12 @@
+:host {
+  display: flex;
+  padding: 0.5rem;
+
+  align-items: flex-end;
+  justify-content: flex-end;
+  pointer-events: none;
+
+  > p-button, > p-overlayPanel {
+    pointer-events: all;
+  }
+}
