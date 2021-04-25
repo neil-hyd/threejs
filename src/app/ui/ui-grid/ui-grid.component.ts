@@ -1,39 +1,34 @@
-import { AfterViewInit, Component, ElementRef, HostBinding, Input, OnInit } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
-import { Size, UIGrid } from '../data/grid.model';
-import { setViewportSize } from './ui-grid.actions';
-import { AppState, gridCellSize, gridSize } from './ui-grid.selector';
+import { AfterViewInit, Component, ElementRef, Input, Output } from '@angular/core';
+import { Size } from '../data/shared.model';
+import { UIGridState } from './store/ui-grid.model';
+import { UIGridStore } from './store/ui-grid.store';
 
 @Component({
   selector: 'app-ui-grid',
   templateUrl: './ui-grid.component.html',
-  styleUrls: ['./ui-grid.component.scss']
+  styleUrls: ['./ui-grid.component.scss'],
+  providers: [UIGridStore]
 })
 export class UiGridComponent implements AfterViewInit {
 
-  count$: Observable<number>;
-
-
-  gridCellSize: Observable<Size>;
+  @Input() gridState: UIGridState;
+  @Output() gridStateChanged$ = this.store.gridState$;
 
   constructor(
     private elRef: ElementRef<HTMLElement>,
-    private store: Store<AppState>) {
-
-      this.store.select(gridCellSize).subscribe(size => {
-        this.elRef.nativeElement.style.gridAutoColumns = size.width + 'px';
-        this.elRef.nativeElement.style.gridAutoRows = size.height + 'px';
-      });
+    private store: UIGridStore) {
   }
 
   ngAfterViewInit() {
 
-    this.gridCellSize = this.store.select(gridSize);
+    this.store.gridCellSize$.subscribe(size => {
+      this.elRef.nativeElement.style.gridAutoColumns = size.width + 'px';
+      this.elRef.nativeElement.style.gridAutoRows = size.height + 'px';
+    });
 
     const { clientWidth, clientHeight } = this.elRef.nativeElement;
 
-    const size: Size = { width: clientWidth, height: clientHeight };
-    this.store.dispatch(setViewportSize({ size }));
+    const viewportSize: Size = { width: clientWidth, height: clientHeight };
+    this.store.setViewportSize(viewportSize);
   }
 }

@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Size } from '../data/grid.model';
+import { Size } from '../../data/shared.model';
 
 export const setViewportSize = createAction('[UIGrid Component] SetViewportSize', props<{ size: Size }>());
 export const toggleGridLines = createAction('[UIGrid Component] ToggleGridLines', props<{ visible?: boolean }>());

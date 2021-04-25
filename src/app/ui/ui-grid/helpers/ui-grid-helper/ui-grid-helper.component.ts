@@ -1,8 +1,6 @@
-import { AfterViewInit, Component, ElementRef } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
-import { Size, UIGrid } from 'src/app/ui/data/grid.model';
-import { AppState, gridLineColor, gridSize, gridState } from '../../ui-grid.selector';
+import { ChangeDetectionStrategy, Component, ElementRef } from '@angular/core';
+import { UIGridState } from '../../store/ui-grid.model';
+import { UIGridStore } from '../../store/ui-grid.store';
 
 interface GridLine {
   key: string;
@@ -18,32 +16,24 @@ interface GridLine {
   templateUrl: './ui-grid-helper.component.html',
   styleUrls: ['./ui-grid-helper.component.scss']
 })
-export class UiGridHelperComponent implements AfterViewInit {
+export class UiGridHelperComponent {
 
   gridLines: GridLine[] = [];
 
-  state$: Observable<UIGrid>;
-
   constructor(
     private elRef: ElementRef<HTMLElement>,
-    private store: Store<AppState>) {
-      this.state$ = this.store.select(gridState);
+    private store: UIGridStore) {
 
-      this.state$.subscribe(newState => {
+      this.store.state$.subscribe(newState => {
         this.calculateGridLines(newState);
       });
 
-      this.store.select(gridLineColor).subscribe(newColor => {
+      this.store.gridLineColor$.subscribe(newColor => {
         this.elRef.nativeElement.style.setProperty('--grid-line-color', newColor);
       });
     }
 
-  ngAfterViewInit() {
-
-
-  }
-
-  calculateGridLines(config: UIGrid) {
+  calculateGridLines(config: UIGridState) {
 
     if (!config) { return; }
 

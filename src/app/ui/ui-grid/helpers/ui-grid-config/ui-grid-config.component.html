@@ -2,10 +2,9 @@
   <ng-template pTemplate>
     <p-panel header="Grid Config">
       <div class="p-field p-grid">
-        <p-checkbox [value]="enabled$ | async" (onChange)="showGridChanged($event)" label="Show Grid Lines">
+        <p-checkbox [ngModel]="enabled$ | async" binary="true" (onChange)="showGridChanged($event)" label="Show Grid Lines">
         </p-checkbox>
       </div>
-
       <div class="p-field">
         <label class="p-col-fixed">Grid Size {{ (size$ | async).width }}</label>
         <p-inputNumber [ngModel]="(size$ | async).width" [showButtons]="true" buttonLayout="horizontal" inputId="horizontal" spinnerMode="horizontal" [step]="1" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" (onInput)="inputChanged($event)">
