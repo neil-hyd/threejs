@@ -20,7 +20,6 @@ export interface UIGridState {
 
 export interface UIGridItemState {
 
-  key: string;
   x: number;
   y: number;
   width: number;

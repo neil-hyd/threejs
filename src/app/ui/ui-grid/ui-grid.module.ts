@@ -12,7 +12,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { PanelModule } from 'primeng/panel';
 import { SliderModule } from 'primeng/slider';
 import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {SidebarModule} from 'primeng/sidebar';
 
 @NgModule({
   imports: [
@@ -25,6 +25,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     SliderModule,
     InputNumberModule,
     ColorPickerModule,
+    SidebarModule
   ],
   declarations: [
     UiGridComponent,

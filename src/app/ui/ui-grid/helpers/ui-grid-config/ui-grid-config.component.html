@@ -1,23 +1,21 @@
-<p-overlayPanel #op [ngStyle]="{width: '300px'}">
-  <ng-template pTemplate>
-    <p-panel header="Grid Config">
-      <div class="p-field p-grid">
-        <p-checkbox [ngModel]="enabled$ | async" binary="true" (onChange)="showGridChanged($event)" label="Show Grid Lines">
-        </p-checkbox>
-      </div>
-      <div class="p-field">
-        <label class="p-col-fixed">Grid Size {{ (size$ | async).width }}</label>
-        <p-inputNumber [ngModel]="(size$ | async).width" [showButtons]="true" buttonLayout="horizontal" inputId="horizontal" spinnerMode="horizontal" [step]="1" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" (onInput)="inputChanged($event)">
-          </p-inputNumber>
-        <p-slider [ngModel]="(size$ | async).width" (onChange)="sliderChanged($event)"></p-slider>
-      </div>
+<p-sidebar [(visible)]="sidebarVisible" styleClass="app-sidebar" position="right">
+  <p-panel [header]="name$ | async">
+    <div class="p-field p-grid">
+      <p-checkbox [ngModel]="enabled$ | async" [binary]="true" (onChange)="showGridChanged($event)" label="Show Grid Lines">
+      </p-checkbox>
+    </div>
+    <div class="p-field">
+      <label class="p-col-fixed">Grid Size</label>
+      <p-inputNumber [ngModel]="(size$ | async).width" [showButtons]="true" buttonLayout="horizontal" inputId="horizontal" spinnerMode="horizontal" [step]="1" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" (onInput)="inputChanged($event)">
+        </p-inputNumber>
+      <p-slider [ngModel]="(size$ | async).width" (onChange)="sliderChanged($event)"></p-slider>
+    </div>
 
-      <div class="p-field">
-        <label class="p-col-fixed">Grid Color</label>
-        <p-colorPicker [ngModel]="color$ | async" (onChange)="colorChanged($event)"></p-colorPicker>
-      </div>
-    </p-panel>
-  </ng-template>
-</p-overlayPanel>
+    <div class="p-field">
+      <label class="p-col-fixed">Grid Color</label>
+      <p-colorPicker [ngModel]="color$ | async" (onChange)="colorChanged($event)"></p-colorPicker>
+    </div>
+  </p-panel>
+</p-sidebar>
 
-<p-button icon="pi pi-cog" styleClass="p-button-lg" (click)="op.toggle($event)"></p-button>
+<p-button icon="pi pi-cog" styleClass="p-button-lg" (onClick)="sidebarVisible = !sidebarVisible"></p-button>

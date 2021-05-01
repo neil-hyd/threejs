@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, Output, SimpleChange, SimpleChanges } from '@angular/core';
 import { Size } from '../data/shared.model';
 import { UIGridState } from './store/ui-grid.model';
 import { UIGridStore } from './store/ui-grid.store';
@@ -9,10 +9,10 @@ import { UIGridStore } from './store/ui-grid.store';
   styleUrls: ['./ui-grid.component.scss'],
   providers: [UIGridStore]
 })
-export class UiGridComponent implements AfterViewInit {
+export class UiGridComponent implements AfterViewInit, OnChanges {
 
   @Input() gridState: UIGridState;
-  @Output() gridStateChanged$ = this.store.gridState$;
+  @Output() gridStateChanged = this.store.gridState$;
 
   constructor(
     private elRef: ElementRef<HTMLElement>,
@@ -30,5 +30,11 @@ export class UiGridComponent implements AfterViewInit {
 
     const viewportSize: Size = { width: clientWidth, height: clientHeight };
     this.store.setViewportSize(viewportSize);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if ('gridState' in changes) {
+      this.store.setState(this.gridState);
+    }
   }
 }

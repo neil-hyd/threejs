@@ -7,30 +7,26 @@ import { UIGridItemState } from '../store/ui-grid.model';
   styleUrls: ['./ui-grid-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UiGridItemComponent implements OnInit, UIGridItemState {
+export class UiGridItemComponent implements OnInit {
 
   constructor() { }
 
-  @Input() key = '';
-  @Input() height = 2;
-  @Input() width = 2;
-  @Input() x = 3;
-  @Input() y = 3;
+  @Input() model: UIGridItemState;
 
   @HostBinding('style.grid-column-start') get gridColumnStart() {
-    return this.x;
+    return this.model.x;
   }
 
   @HostBinding('style.grid-column-end') get gridColumnEnd() {
-    return this.x + this.width;
+    return this.model.x + this.model.width;
   }
 
   @HostBinding('style.grid-row-start') get gridRowStart() {
-    return this.y;
+    return this.model.y;
   }
 
   @HostBinding('style.grid-row-end') get gridRowEnd() {
-    return this.y + this.height;
+    return this.model.y + this.model.height;
   }
 
   ngOnInit() {

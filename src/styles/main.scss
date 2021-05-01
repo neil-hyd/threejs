@@ -1,6 +1,7 @@
 @import '~primeicons/primeicons.css';
 @import '~primeng/resources/themes/saga-blue/theme.css';
 @import '~primeng/resources/primeng.min.css';
+@import '~primeflex/primeflex.css';
 
 /*****************************************************
  * styles
@@ -11,4 +12,12 @@ html, body, app-root, app-game {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+.app-sidebar.p-sidebar {
+  padding: 0;
+
+  .p-sidebar-content {
+    background: none;
+  }
 }

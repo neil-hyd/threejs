@@ -11,10 +11,13 @@ import { UIGridStore } from '../../store/ui-grid.store';
 })
 export class UiGridConfigComponent {
 
+  sidebarVisible = false;
+
   enabled$: Observable<boolean>;
   size$: Observable<Size>;
   color$: Observable<string>;
   opacity$: Observable<number>;
+  name$: Observable<string>;
 
   constructor(
     private store: UIGridStore) {
@@ -22,6 +25,7 @@ export class UiGridConfigComponent {
       this.size$ = this.store.gridCellSize$;
       this.color$ = this.store.gridLineColor$;
       this.opacity$ = this.store.gridLineOpacity$;
+      this.name$ = this.store.gridName$;
     }
 
   showGridChanged(ev: { checked: boolean }) {

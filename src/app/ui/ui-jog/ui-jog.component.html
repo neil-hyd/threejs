@@ -1,7 +1,16 @@
 <svg #svg>
-  <g class="centered" #segments></g>
-  <g>
-    <circle [attr.cx]="20" [attr.cy]="100" r="40" stroke="black" stroke-width="3" fill="red" cdkDrag />
+  <g class="centered" id="ArcSegments" #segments>
+    <ng-container *ngIf="arcSegments">
+      <path *ngFor="let s of arcSegments" [@activeAnim]="s.index === (value$ | async)" [attr.d]="s.path" stroke="black" stroke-width="1" fill="none"></path>
+    </ng-container>
   </g>
+  <g class="centered">
+    <circle *ngIf="knob" [attr.cx]="knob.x" [attr.cy]="knob.y" r="20" stroke="black" stroke-width="1" fill="black" />
+  </g>
+  <circle *ngIf="thisState && active" [attr.cx]="this.thisState.rawPoint.x" [attr.cy]="this.thisState.rawPoint.y" r="40" stroke="black" stroke-width="1" fill="white" />
+  <line *ngIf="active" stroke="black" stroke-width="1"  [attr.x1]="this.thisState?.rawPoint.x" [attr.y1]="this.thisState?.rawPoint.y" [attr.x2]="this.centerOffset.x" [attr.y2]="this.centerOffset.y" ></line>
 </svg>
-
+<div id="value">
+  <div>{{ value$ | async }}</div>
+  <div>{{ this.arcSegments?.length }}</div>
+</div>

@@ -1,11 +1,15 @@
-<app-ui-grid [gridState]>
-  <app-ui-grid-item key="test" [x]="2" [width]="10" [height]="10">
-    <app-ui-jog></app-ui-jog>
-  </app-ui-grid-item>
-  <app-ui-grid-item key="test" [x]="14" [y]="6" [width]="16" [height]="12">
-    <app-engine></app-engine>
+<app-ui-grid [gridState]="activeLayout$ | async" (gridStateChanged)="gridChanged($event)">
+  <app-ui-grid-item *ngFor="let item of items" [model]="item.position">
+    <app-ui-jog *ngIf="item.type === 'jog'"></app-ui-jog>
+    <app-engine *ngIf="item.type === 'engine'"></app-engine>
   </app-ui-grid-item>
 </app-ui-grid>
+
+<div id="config">
+  <h5>Popup</h5>
+  <button #btn type="button" pButton icon="pi pi-bars" label="Show" (click)="menu.toggle($event)"></button>
+  <p-tieredMenu #menu [model]="menuItems | async" [popup]="true"></p-tieredMenu>
+</div>
 
 
 

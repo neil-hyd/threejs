@@ -69,4 +69,5 @@ export class UIGridStore extends ComponentStore<UIGridState> {
   gridSize$ = this.select((state: UIGridState) => state.grid);
   gridCellSize$ = this.select((state: UIGridState) => state.gridCellSize);
   gridState$ = this.select((state: UIGridState) => state);
+  gridName$ = this.select((state: UIGridState) => state.name);
 }
