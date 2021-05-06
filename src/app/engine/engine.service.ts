@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three-orbitcontrols-ts';
 import { ElementRef, Injectable, NgZone, OnDestroy } from '@angular/core';
+import { Size } from '../ui/data/shared.model';
 
 let frustumSize = 400;
 

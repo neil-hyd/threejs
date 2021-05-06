@@ -1,11 +1,12 @@
 import { trigger, group, animate, transition, style, state, keyframes } from '@angular/animations';
 import { Point } from '@angular/cdk/drag-drop';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
+import { DefaultArcObject } from 'd3';
 import { BehaviorSubject } from 'rxjs';
 import { ResizeService } from 'src/app/services/resize.service';
 import { AngleBetweenPoints, AngleToValue, NormalisedPoint, ValueToAngle } from './pipes/angle-to-value.pipe';
-import { ActiveInputState } from './store/ui-jog.model';
+import { ActiveInputState, EDirection } from './store/ui-jog.model';
 
 const ZERO_POINT: Point = {x: 0, y: 0};
 
@@ -17,7 +18,6 @@ export interface ArcSegment {
   active: boolean;
 }
 
-
 @Component({
   selector: 'app-ui-jog',
   templateUrl: './ui-jog.component.html',
@@ -25,11 +25,14 @@ export interface ArcSegment {
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('activeAnim', [
-      state('true', style({ fill: '#333', stroke: '#333', fillOpacity: 1 })),
-      state('false', style({ fill: 'white', stroke: '#ccc', fillOpacity: .1 })),
+      state('false', style({ stroke: '#ccc', transform: 'scale(1)'})),
+      state('true', style({ stroke: '#ccc', fill: '#ccc', transform: 'scale(1.1)'})),
+      transition('* => true', [
+        style({ fill: '#ccc', fillOpacity: 1, transform: 'scale(1.1)' })
+      ]),
       transition('true => false',
         group([
-          animate('2s ease-out', style({ fillOpacity: .1, stroke: '#ccc' })),
+          animate('1s ease-out', style({ transform: 'scale(1)' })),
           animate('2s ease-out', keyframes([
             style({ fill: '#ff2400', fillOpacity: .9 }),
             style({ fill: '#e81d1d', fillOpacity: .8 }),
@@ -52,16 +55,15 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
 
   public segmentsGroup: ElementRef<SVGGElement>;
 
-  private radiansConv = (Math.PI / 180);
-
   private frameId: any;
 
+  direction: EDirection = EDirection.clockwise;
+  offset = 0;
   private numSegments = 100;
   private width: number;
   private height: number;
 
   centerOffset: Point;
-
 
   private arcWidth: number;
   private innerRadius: number;
@@ -71,13 +73,17 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
   value = new BehaviorSubject<number>(0);
   value$ = this.value.asObservable();
 
+  @HostBinding('class.active')
   active = false;
 
   startState?: ActiveInputState;
   lastState?: ActiveInputState;
   thisState?: ActiveInputState;
 
-  arcSegments: ArcSegment[];
+  arcSegments: ArcSegment[] = [];
+  ticks: {p1: Point, p2: Point, index: number}[] = [];
+
+  activeSegments: number[] = [];
 
   knob?: Point;
 
@@ -91,9 +97,11 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
       this.inputEnd = this.inputEnd.bind(this);
 
       this.arcWidth = Math.PI * 2 / this.numSegments;
+
   }
 
   ngOnDestroy(): void {
+
     if (this.frameId != null) {
       cancelAnimationFrame(this.frameId);
     }
@@ -101,29 +109,23 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
 
-    this.resizeService.resize$.subscribe(x => {
-      const {clientHeight, clientWidth} = this.elRef.nativeElement;
-      this.width = clientWidth;
-      this.height = clientHeight;
-      this.centerOffset = { x: this.height / 2, y: this.width / 2 };
-      this.drawSegments();
-      this.changeRef.markForCheck();
-    });
-
     this.elRef.nativeElement.addEventListener('pointerdown', (ev) => {
       this.inputStart(ev);
     });
 
-    this.value$.subscribe((value) => {
+    setTimeout(() => {
+      this.updateSize();
+      this.updateUi(true);
+      this.changeRef.detectChanges();
+    }, 1000);
+  }
 
-      const radius = .75 * this.width / 2;
-      const angle = this.arcWidth * value;
-
-      this.knob = {
-        x: radius *  Math.cos(angle - HALF_PI),
-        y: radius *  Math.sin(angle - HALF_PI)
-      };
-    });
+  updateSize() {
+    const {clientHeight, clientWidth} = this.elRef.nativeElement;
+    this.width = clientWidth;
+    this.height = clientHeight;
+    this.centerOffset = { x: this.height / 2, y: this.width / 2 };
+    this.drawSegments();
   }
 
   getInputState(event: PointerEvent): ActiveInputState {
@@ -134,15 +136,31 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
     };
 
     const normalisedPoint = NormalisedPoint(rawPoint, this.centerOffset);
+    let angle = AngleBetweenPoints(ZERO_POINT, normalisedPoint);
+
+    angle = ((Math.PI / 2) - angle) - this.offset;
+
+    while (angle < -Math.PI) {
+      angle += Math.PI * 2;
+    }
+    while (angle > Math.PI) {
+      angle -= Math.PI * 2;
+    }
+
     return {
       event,
-      angle: AngleBetweenPoints(ZERO_POINT, normalisedPoint),
+      angle,
       normalisedPoint,
       rawPoint,
+      index: AngleToValue(angle, this.numSegments, this.direction, this.offset)
     };
   }
 
   inputStart(event: PointerEvent) {
+
+    if (this.active) {
+      return;
+    }
 
     this.elRef.nativeElement.addEventListener('pointermove', this.inputMove);
     this.elRef.nativeElement.addEventListener('pointercancel', this.inputEnd);
@@ -162,6 +180,10 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
 
   inputMove(event: PointerEvent) {
 
+    if (event.pointerId !== this.startState.event.pointerId) {
+      return;
+    }
+
     this.lastState = this.thisState;
     this.thisState = this.getInputState(event);
 
@@ -170,20 +192,11 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  updateUi() {
-
-    const value = AngleToValue(this.thisState.angle, this.numSegments);
-    this.value.next(value);
-
-    const angleForValue = ValueToAngle(value, this.numSegments) + HALF_PI;
-
-    this.knob = {
-      x: this.arcCenter * Math.sin(angleForValue),
-      y: this.arcCenter * Math.cos(angleForValue)
-    };
-  }
-
   inputEnd(event: PointerEvent) {
+
+    if (event.pointerId !== this.startState.event.pointerId) {
+      return;
+    }
 
     this.active = false;
 
@@ -195,15 +208,100 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
+  wrapped(v: number) {
+    if (v >= this.numSegments) {
+      const r = v % this.numSegments;
+      return r;
+    } else if (v < 0) {
+      const r = v % this.numSegments;
+      return v % (this.numSegments + r);
+    }
+    return v;
+  }
+
+  updateUi(force = false) {
+
+    let lastIndex = force ? 0 : this.lastState.index;
+    let thisIndex = force ? 0 : this.thisState.index;
+
+    if (!force && lastIndex === thisIndex) {
+      return;
+    }
+
+    let dif = lastIndex - thisIndex;
+    let half = this.numSegments / 2;
+
+    if (dif > half) {
+      dif = -(this.numSegments - dif);
+    } else if (dif < -half) {
+      dif = this.numSegments + dif;
+    }
+
+    let steps = Math.abs(dif);
+
+    this.activeSegments = [];
+
+    const lastValue = this.value.value;
+    const nextValue = this.value.value - dif;
+
+    const lm = this.wrapped(lastValue);
+    const nm = this.wrapped(nextValue);
+
+    this.value.next(nextValue);
+
+    const radius = .6 * this.width / 2;
+    const angle = this.arcWidth * nm;
+
+    this.knob = {
+      x: radius *  Math.cos(angle - HALF_PI),
+      y: radius *  Math.sin(angle - HALF_PI)
+    };
+
+    if (dif === 1 || dif === 0 || dif === -1) {
+      this.activeSegments = [nm];
+    } else if (dif < -1) {
+      for (let i = 1; i <= steps; i++) {
+        let v = lm + i;
+
+        if (v < 0) {
+          v = this.numSegments - v
+        } else if (v > this.numSegments) {
+          v = v - this.numSegments
+        }
+
+        if (v === this.numSegments) {
+          v = 0;
+        }
+
+        this.activeSegments.push(v);
+      }
+    } else {
+      for (let i = 0; i <= steps; i++) {
+        let v = lm - i;
+        if (v < 0) {
+          v = this.numSegments + v
+        } else if (v > this.numSegments) {
+          v = v - this.numSegments
+        }
+
+        if (v === this.numSegments) {
+          v = 0;
+        }
+        this.activeSegments.push(v);
+      }
+    }
+
+  }
+
   drawSegments() {
 
     const c = d3.select(this.segmentsGroup.nativeElement);
 
     const minDimension = Math.min(this.height / 2, this.width / 2);
 
-    this.innerRadius = minDimension * .7;
+    this.innerRadius = minDimension * .6;
     this.outerRadius = minDimension * .9;
-    this.arcCenter = this.outerRadius - ((this.outerRadius - this.innerRadius) / 2);
+    this.arcCenter = minDimension * .6;
 
     const arcGenerator = d3.arc()
       .innerRadius(this.innerRadius)
@@ -213,8 +311,34 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
 
     const arcData = this.generateArcSegmentData();
 
+    const dif = this.direction === EDirection.clockwise ? -(this.arcWidth / 2) : (this.arcWidth / 2);
+    this.ticks.length = 0;
     this.arcSegments = arcData.map<ArcSegment>((d, index) => {
+
+      const midAngle = d.startAngle - dif - (Math.PI / 2);
+
+      let length = 3;
+      if ((index) % 5 === 0) {
+        length = 8;
+      }
+      if ((index) % 10 === 0) {
+        length = 15;
+      }
+
+      this.ticks.push({
+        p1: {
+          x: this.outerRadius * Math.cos(midAngle),
+          y: this.outerRadius * Math.sin(midAngle)
+        },
+        p2: {
+          x: (this.outerRadius + length) * Math.cos(midAngle),
+          y: (this.outerRadius + length) * Math.sin(midAngle)
+        },
+        index
+      });
+
       const arc = arcGenerator(d);
+
       return {
         path: arc,
         index,
@@ -237,18 +361,27 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
     // this.tick++;
   }
 
-  generateArcSegmentData() {
+  generateArcSegmentData(): DefaultArcObject[] {
 
     const data = [];
-    const moment = 360 / this.numSegments * this.radiansConv;
+    const moment = Math.PI * 2 / this.numSegments;
     const halfMoment = moment / 2;
 
-    const offset = -Math.PI / 2;
+    let dif = moment;
+
+    let curAngle = this.offset - halfMoment;
+
+    if (this.direction === EDirection.anticlockwise) {
+      curAngle = this.offset + halfMoment;
+      dif = -moment
+    }
+
+    let endAngle = curAngle + dif;
 
     for (let arc = 0; arc < this.numSegments; arc++) {
-      const startAngle = (moment * arc) - halfMoment + offset;
-      const endAngle = startAngle + moment;
-      data.push({startAngle: -startAngle, endAngle: -endAngle});
+      data.push({startAngle: curAngle, endAngle: endAngle});
+      curAngle = endAngle;
+      endAngle = endAngle + dif;
     }
 
     return data;

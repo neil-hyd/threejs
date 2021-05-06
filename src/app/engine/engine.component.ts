@@ -1,4 +1,5 @@
 import {Component, ElementRef, AfterViewInit, ViewChild} from '@angular/core';
+import { ResizeService } from '../services/resize.service';
 import {EngineService} from './engine.service';
 
 @Component({
@@ -13,7 +14,12 @@ export class EngineComponent implements AfterViewInit {
 
   public constructor(
     private engServ: EngineService,
-    private elRef: ElementRef<HTMLElement>) {
+    private elRef: ElementRef<HTMLElement>,
+    private resizeService: ResizeService) {
+
+      this.resizeService.resize$.subscribe(x => {
+        this.engServ.setSize(this.elRef.nativeElement.clientWidth, this.elRef.nativeElement.clientHeight);
+      });
   }
 
   public ngAfterViewInit(): void {

@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {AfterContentInit, AfterViewInit, Component} from '@angular/core';
 import { Store } from '@ngrx/store';
 import { MenuItem } from 'primeng/api';
 import { Observable } from 'rxjs';
@@ -26,24 +26,24 @@ interface GridLayout {
   styleUrls: ['./app.component.scss'],
   providers: [ResizeService]
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
 
   items: DashboardItem[] = [{
     position: {
-      height: 8,
-      width: 8,
-      x: 4,
-      y: 4
-    },
-    type: 'jog'
-  }, {
-    position: {
-      height: 5,
-      width: 5,
-      x: 15,
-      y: 4
+      height: 10,
+      width: 10,
+      x: 1,
+      y: 1
     },
     type: 'engine'
+  }, {
+    position: {
+      height: 8,
+      width: 8,
+      x: 11,
+      y: 1
+    },
+    type: 'jog'
   }];
 
   menuItems: Observable<MenuItem[]>;
@@ -78,6 +78,9 @@ export class AppComponent {
         return menuItems;
       })
     );
+  }
+
+  ngAfterViewInit() {
     this.resizeService.resize.next();
   }
 

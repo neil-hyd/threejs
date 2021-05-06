@@ -2,6 +2,22 @@
   display: block;
   background: black;
 
+  app-engine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  app-ui-jog {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    right: 2rem;
+    bottom: 2rem;
+  }
+
   app-ui-grid {
     height: 100%;
     width: 100%;

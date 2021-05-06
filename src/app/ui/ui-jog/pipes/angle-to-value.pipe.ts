@@ -1,6 +1,7 @@
 import { Point } from '@angular/cdk/drag-drop';
+import { EDirection } from '../store/ui-jog.model';
 
-export function AngleToValue(angle: number, segments: number): number {
+export function AngleToValue(angle: number, segments: number, direction: EDirection, offset: number): number {
 
     if (angle < 0) {
       angle = (Math.PI * 2) + angle;
@@ -8,12 +9,30 @@ export function AngleToValue(angle: number, segments: number): number {
 
     const arcPerent = angle / (Math.PI * 2);
 
-    return Math.round(arcPerent * segments);
+    let v = Math.round(arcPerent * segments);
+
+    if (direction === EDirection.anticlockwise) {
+      v = segments - v;
+    }
+
+    if (v === segments) {
+      v = 0;
+    }
+
+    return v;
 }
 
-export function ValueToAngle(value: number, segments: number): number {
+export function ValueToAngle(value: number, segments: number, direction: EDirection, offset: number): number {
 
-  return Math.PI * 2 * value / segments;
+  const arc = Math.PI * 2 / segments;
+
+  const v = arc * value;
+
+  if (direction === EDirection.anticlockwise) {
+    return v - Math.PI - offset;
+  }
+
+  return Math.PI - offset - v;
 }
 
 export function NormalisedPoint(point: Point, offset: Point): Point {

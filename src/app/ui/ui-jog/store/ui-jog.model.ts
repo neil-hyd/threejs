@@ -5,12 +5,18 @@ export interface UIJogComponentState {
   uiState: UIJogState;
 }
 
+export enum EDirection {
+  clockwise,
+  anticlockwise
+}
+
 export interface ActiveInputState {
 
-  event: MouseEvent | TouchEvent;
+  event: PointerEvent;
   rawPoint: Point;
   normalisedPoint: Point;
   angle: number;
+  index: number;
 }
 
 export interface UIJogState {

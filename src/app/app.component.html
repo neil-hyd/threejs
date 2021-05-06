@@ -1,9 +1,7 @@
-<app-ui-grid [gridState]="activeLayout$ | async" (gridStateChanged)="gridChanged($event)">
-  <app-ui-grid-item *ngFor="let item of items" [model]="item.position">
-    <app-ui-jog *ngIf="item.type === 'jog'"></app-ui-jog>
-    <app-engine *ngIf="item.type === 'engine'"></app-engine>
-  </app-ui-grid-item>
-</app-ui-grid>
+<ng-container *ngFor="let item of items">
+  <app-ui-jog *ngIf="item.type === 'jog'"></app-ui-jog>
+  <app-engine *ngIf="item.type === 'engine'"></app-engine>
+</ng-container>
 
 <div id="config">
   <h5>Popup</h5>
