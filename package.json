@@ -44,7 +44,7 @@
     "primeng": "^11.3.2",
     "rxjs": "~6.6.6",
     "three": "^0.126.1",
-    "three-orbitcontrols-ts": "^0.1.2",
+    "three-orbitcontrols-ts": "git+https://git@github.com/nicolaspanel/three-orbitcontrols-ts.git",
     "tslib": "^2.1.0",
     "zone.js": "~0.10.3"
   },

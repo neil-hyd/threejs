@@ -20,7 +20,5 @@ export class UiComponent implements OnInit {
   {
     this.animationSpeed = parseFloat(el.value);
     this.engServ.animationSpeed = this.animationSpeed;
-    console.log(this.animationSpeed);
   }
-
 }

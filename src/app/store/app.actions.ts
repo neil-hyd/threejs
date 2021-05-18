@@ -5,3 +5,4 @@ export const setActiveLayout = createAction('[Layout Component] SetActiveLayout'
 export const createLayout = createAction('[Layout Component] CreateLayout', props<{ id: string, name: string }>());
 export const deleteLayout = createAction('[Layout Component] DeleteLayout', props<{ id: string }>());
 export const updateLayout = createAction('[Layout Component] UpdateLayout', props<{ grid: UIGridState }>());
+export const updateFOV = createAction('[Layout Component] UpdateFOV', props<{ fov: number }>());

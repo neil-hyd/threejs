@@ -38,6 +38,11 @@ const AppLayoutReducer = createReducer<IAppLayout>(
       newState.layouts = [...state.layouts.filter(x => x.id !== grid.id), grid];
     });
   }),
+  on(LayoutActions.updateFOV, (state, {fov}) => {
+    return produce(state, newState => {
+      newState.fov = fov;
+    });
+  }),
 );
 
 export function appLayoutReducer(state, action) {

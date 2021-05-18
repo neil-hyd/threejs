@@ -7,10 +7,12 @@ export interface IAppState {
 export interface IAppLayout {
   activeLayout: string;
   layouts: UIGridState[];
+  fov: number;
 }
 
 export const defaultAppState = {
   layouts: [initialState],
-  activeLayout: initialState.id
+  activeLayout: initialState.id,
+  fov: 452
 };
 

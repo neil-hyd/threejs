@@ -1,24 +1,8 @@
-import {AfterContentInit, AfterViewInit, Component} from '@angular/core';
+import { AfterViewInit, Component} from '@angular/core';
 import { Store } from '@ngrx/store';
-import { MenuItem } from 'primeng/api';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { ResizeService } from './services/resize.service';
-import { createLayout, setActiveLayout, updateLayout } from './store/app.actions';
-import { selectActiveLayout, selectLayoutState } from './store/app.selector';
-import { UIGridItemState, UIGridState } from './ui/ui-grid/store/ui-grid.model';
-
-type DashboardItemType = 'jog' | 'engine';
-
-interface DashboardItem {
-  type: DashboardItemType;
-  position: UIGridItemState;
-}
-
-interface GridLayout {
-  layout: UIGridState;
-  items: DashboardItem[];
-}
+import { updateFOV } from './store/app.actions';
+import { selectActiveLayout, selectFOV } from './store/app.selector';
 
 @Component({
   selector: 'app-root',
@@ -28,64 +12,20 @@ interface GridLayout {
 })
 export class AppComponent implements AfterViewInit {
 
-  items: DashboardItem[] = [{
-    position: {
-      height: 10,
-      width: 10,
-      x: 1,
-      y: 1
-    },
-    type: 'engine'
-  }, {
-    position: {
-      height: 8,
-      width: 8,
-      x: 11,
-      y: 1
-    },
-    type: 'jog'
-  }];
-
-  menuItems: Observable<MenuItem[]>;
-
   activeLayout$ = this.store.select(selectActiveLayout);
+
+  fov$ = this.store.select(selectFOV);
 
   constructor(private store: Store, private resizeService: ResizeService) {
 
-    this.menuItems = this.store.select(selectLayoutState).pipe(map(appState => {
-        const menuItems: MenuItem[] = [
-          {
-            label: 'New',
-            icon: 'pi pi-fw pi-plus',
-            command: (event) => {
-              this.store.dispatch(createLayout({id: Date.now().toString(), name: 'New Layout'}));
-            }
-          },
-          {
-            label: 'Layouts',
-            icon: 'pi pi-fw pi-minus',
-            items: appState.layouts.map(x => {
-              return {
-                label: x.name,
-                icon: 'pi pi-fw pi-page',
-                command: (event) => {
-                  this.store.dispatch(setActiveLayout({id: x.id}));
-                }
-              };
-            })
-          }
-        ];
-        return menuItems;
-      })
-    );
   }
 
   ngAfterViewInit() {
     this.resizeService.resize.next();
   }
 
-  gridChanged(layout: UIGridState) {
-    this.store.dispatch(updateLayout({ grid: layout }));
-    this.resizeService.resize.next();
+  newValue(newValue: number) {
+    this.store.dispatch(updateFOV({fov: newValue}));
   }
 }
+

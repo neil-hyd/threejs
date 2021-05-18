@@ -9,8 +9,11 @@ import {EngineService} from './engine.service';
 })
 export class EngineComponent implements AfterViewInit {
 
-  @ViewChild('rendererCanvasHolder', {static: true})
-  public rendererCanvasHolder: ElementRef<HTMLDivElement>;
+  @ViewChild('cameraView', {static: true})
+  public cameraView: ElementRef<HTMLDivElement>;
+
+  @ViewChild('overView', {static: true})
+  public overView: ElementRef<HTMLDivElement>;
 
   public constructor(
     private engServ: EngineService,
@@ -23,7 +26,7 @@ export class EngineComponent implements AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    this.engServ.createScene(this.elRef);
+    this.engServ.createScene(this.overView, this.cameraView);
     this.engServ.animate();
   }
 }

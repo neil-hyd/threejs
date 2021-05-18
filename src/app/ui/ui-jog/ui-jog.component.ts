@@ -1,6 +1,6 @@
 import { trigger, group, animate, transition, style, state, keyframes } from '@angular/animations';
 import { Point } from '@angular/cdk/drag-drop';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, NgZone, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DefaultArcObject } from 'd3';
 import { BehaviorSubject } from 'rxjs';
@@ -25,24 +25,25 @@ export interface ArcSegment {
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('activeAnim', [
-      state('false', style({ stroke: '#ccc', transform: 'scale(1)'})),
-      state('true', style({ stroke: '#ccc', fill: '#ccc', transform: 'scale(1.1)'})),
+      state('false', style({ stroke: '#ccc', fillOpacity: .1, transform: 'scale(1)'})),
+      state('true', style({ stroke: '#ccc', fill: '#ccc', fillOpacity: 1, transform: 'scale(1.1)'})),
       transition('* => true', [
         style({ fill: '#ccc', fillOpacity: 1, transform: 'scale(1.1)' })
       ]),
       transition('true => false',
         group([
           animate('1s ease-out', style({ transform: 'scale(1)' })),
+          animate('2s ease-out', style({ fillOpacity: .1 })),
           animate('2s ease-out', keyframes([
-            style({ fill: '#ff2400', fillOpacity: .9 }),
-            style({ fill: '#e81d1d', fillOpacity: .8 }),
-            style({ fill: '#e8b71d', fillOpacity: .7 }),
-            style({ fill: '#e3e81d', fillOpacity: .6 }),
-            style({ fill: '#1de840', fillOpacity: .5 }),
-            style({ fill: '#1ddde8', fillOpacity: .35 }),
-            style({ fill: '#2b1de8', fillOpacity: .2 }),
-            style({ fill: '#dd00f3', fillOpacity: .1 }),
-            style({ fill: '#dd00f3', fillOpacity: .01 })
+            style({ fill: '#ff2400' }),
+            style({ fill: '#e81d1d' }),
+            style({ fill: '#e8b71d' }),
+            style({ fill: '#e3e81d' }),
+            style({ fill: '#1de840' }),
+            style({ fill: '#1ddde8' }),
+            style({ fill: '#2b1de8' }),
+            style({ fill: '#dd00f3' }),
+            style({ fill: '#dd00f3' })
           ])
         )
       ])
@@ -62,6 +63,7 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
   private numSegments = 100;
   private width: number;
   private height: number;
+  knobSize = 20;
 
   centerOffset: Point;
 
@@ -70,8 +72,15 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
   private outerRadius: number;
   private arcCenter: number;
 
-  value = new BehaviorSubject<number>(0);
-  value$ = this.value.asObservable();
+  @Input()
+  set v(newValue: number) {
+    this._value.next(newValue);
+  }
+
+  private _value = new BehaviorSubject<number>(452);
+
+  @Output()
+  value$ = this._value.asObservable();
 
   @HostBinding('class.active')
   active = false;
@@ -97,7 +106,6 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
       this.inputEnd = this.inputEnd.bind(this);
 
       this.arcWidth = Math.PI * 2 / this.numSegments;
-
   }
 
   ngOnDestroy(): void {
@@ -117,7 +125,7 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
       this.updateSize();
       this.updateUi(true);
       this.changeRef.detectChanges();
-    }, 1000);
+    }, 300);
   }
 
   updateSize() {
@@ -125,6 +133,7 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
     this.width = clientWidth;
     this.height = clientHeight;
     this.centerOffset = { x: this.height / 2, y: this.width / 2 };
+    this.knobSize = this.width * .1;
     this.drawSegments();
   }
 
@@ -214,7 +223,7 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
       return r;
     } else if (v < 0) {
       const r = v % this.numSegments;
-      return v % (this.numSegments + r);
+      return r === 0 ? r : this.numSegments + r;
     }
     return v;
   }
@@ -241,13 +250,13 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
 
     this.activeSegments = [];
 
-    const lastValue = this.value.value;
-    const nextValue = this.value.value - dif;
+    const lastValue = this._value.value;
+    const nextValue = this._value.value - dif;
 
     const lm = this.wrapped(lastValue);
     const nm = this.wrapped(nextValue);
 
-    this.value.next(nextValue);
+    this._value.next(nextValue);
 
     const radius = .6 * this.width / 2;
     const angle = this.arcWidth * nm;
@@ -345,8 +354,6 @@ export class UiJogComponent implements AfterViewInit, OnDestroy {
         active: index === 0
       };
     });
-
-    console.log(this.arcSegments);
   }
 
   public animate() {

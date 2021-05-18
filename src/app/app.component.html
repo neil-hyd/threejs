@@ -1,13 +1,2 @@
-<ng-container *ngFor="let item of items">
-  <app-ui-jog *ngIf="item.type === 'jog'"></app-ui-jog>
-  <app-engine *ngIf="item.type === 'engine'"></app-engine>
-</ng-container>
-
-<div id="config">
-  <h5>Popup</h5>
-  <button #btn type="button" pButton icon="pi pi-bars" label="Show" (click)="menu.toggle($event)"></button>
-  <p-tieredMenu #menu [model]="menuItems | async" [popup]="true"></p-tieredMenu>
-</div>
-
-
-
+<app-engine ></app-engine>
+<app-ui-jog [v]="fov$ | async" (value$)="newValue($event)"></app-ui-jog>

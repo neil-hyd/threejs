@@ -17,3 +17,8 @@ export const selectLayoutState = createSelector(
   selectLayout,
   (state: IAppLayout) => state
 );
+
+export const selectFOV = createSelector(
+  selectLayout,
+  (state: IAppLayout) => state.fov
+);
